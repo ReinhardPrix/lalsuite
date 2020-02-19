@@ -154,14 +154,20 @@ SERIESTYPE *ASERIES (
 		XLALPrintError("%s(): incompatible sample periods\n", __func__);
 		XLAL_ERROR_NULL(XLAL_EDATA);
 	}
+        REAL8 i0 = fabs(Delta_epoch / arg1->deltaT);
+        REAL8 bin_mismatch = fabs(i0 - round(i0)) / (i0 >= 1 ? i0 : 1.0);
+        if ( bin_mismatch > 10 * LAL_REAL8_EPS ) {
+                XLALPrintError("%s(): incompatible start-times, bins misaligned by %.5g deltaT\n", __func__, i0 - round(i0) );
+                XLAL_ERROR_NULL(XLAL_EDATA);
+        }
 
 	/* set start indexes */
 	if(Delta_epoch >= 0) {
-		i = floor(Delta_epoch / arg1->deltaT + 0.5);
+                i = round(Delta_epoch / arg1->deltaT);
 		j = 0;
 	} else {
 		i = 0;
-		j = floor(-Delta_epoch / arg2->deltaT + 0.5);
+		j = round(-Delta_epoch / arg2->deltaT);
 	}
 
 	/* add arg2 to arg1, adjusting the units */
